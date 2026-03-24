@@ -2,32 +2,33 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { UsersResponse, UserState } from "./usersTypes";
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: "https://dummyjson.com",
 });
 
 export const getAllUsers = createAsyncThunk<UsersResponse>(
   "users/getAllUsers",
   async () => {
-    const { data } = await axiosInstance.get("/users");
+    const { data } = await axiosInstance.get<UsersResponse>(`/users`);
     return data;
   },
 );
 
-export const getDashboardUsers = createAsyncThunk<UsersResponse>(
-  "users/getDashboardUsers",
-  async () => {
-    const { data } = await axiosInstance.get("/users?limit=4");
-    return data;
-  },
-);
+export const getAllAppDetails = createAsyncThunk<
+  UsersResponse,
+  { limit: number; skip: number }
+>("users/getAllAppDetails", async ({ limit, skip }) => {
+  const { data } = await axiosInstance.get<UsersResponse>(
+    `/users?limit=${limit}&skip=${skip}`,
+  );
+  return data;
+});
 
 const initialState: UserState = {
   userData: null,
-  dBUserData: null,
   isLoading: false,
-  isLoadingDashboard: false,
   isError: false,
+  appData: null,
 };
 
 const usersSlice = createSlice({
@@ -47,15 +48,17 @@ const usersSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
       })
-      .addCase(getDashboardUsers.pending, (state) => {
-        state.isLoadingDashboard = true;
+
+      // app details
+      .addCase(getAllAppDetails.pending, (state) => {
+        state.isLoading = true;
       })
-      .addCase(getDashboardUsers.fulfilled, (state, action) => {
-        state.isLoadingDashboard = false;
-        state.dBUserData = action.payload.users;
+      .addCase(getAllAppDetails.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.appData = action.payload;
       })
-      .addCase(getDashboardUsers.rejected, (state) => {
-        state.isLoadingDashboard = false;
+      .addCase(getAllAppDetails.rejected, (state) => {
+        state.isLoading = false;
         state.isError = true;
       });
   },

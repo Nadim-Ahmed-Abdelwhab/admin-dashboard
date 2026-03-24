@@ -1,66 +1,137 @@
+"use client";
+
 import {
-  Avatar,
+  AppBar,
+  Toolbar,
   Box,
   IconButton,
   InputBase,
-  Paper,
+  Avatar,
   Typography,
+  Badge,
+  Menu,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import ViewHeadlineIcon from "@mui/icons-material/ViewHeadline";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import LogoutIcon from "@mui/icons-material/Logout";
+import SettingsIcon from "@mui/icons-material/Settings";
 
-export default function TopBar() {
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch, GlopalStore } from "@/store/store";
+import { toggleTheme } from "@/features/theme/theme";
+
+export default function TopBar( { toggle } : { toggle :()=> void }) {
+  const dispatch = useDispatch<Dispatch>();
+  const mode = useSelector((state: GlopalStore) => state.theme.mode);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <>
-      <Box
-        display={"flex"}
-        justifyContent={"space-between"}
-        width={"100%"}
-        alignItems={"center"}
-      >
-        <Box display={"flex"} gap={3} alignItems={"center"}>
-          <ViewHeadlineIcon />
-          <Paper
-            component="form"
+    <AppBar
+      position="static"
+      elevation={0}
+      sx={{
+        bgcolor: "Background.paper",
+      }}
+    >
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        {/* Left Section */}
+        <Box display="flex" alignItems="center" gap={2}>
+          <IconButton onClick={toggle}>
+            <MenuIcon />
+          </IconButton>
+
+          <Box
             sx={{
-              p: "2px 4px",
               display: "flex",
               alignItems: "center",
-              width: 200,
-              height: 20,
+              bgcolor: "background.default",
+              px: 2,
+              borderRadius: 2,
+              width: 250,
+              border: 1,
+              borderColor: "divider",
             }}
           >
-            <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Search..." />
-            <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-              <SearchIcon />
-            </IconButton>
-          </Paper>
-        </Box>
-        <Box>
-          <Typography
-            fontSize={50}
-            fontWeight={900}
-            color="skyBlue"
-            display={"inline"}
-          >
-            A
-            <Typography component={"span"} fontSize={30} color={'black'} fontWeight={900}>
-              S
-            </Typography>
-          </Typography>
+            <SearchIcon sx={{ color: "action.active", mr: 1 }} />
+            <InputBase placeholder="Search..." sx={{ width: "100%" }} />
+          </Box>
         </Box>
 
-        <Box display={"flex"} gap={2} alignItems={"center"}>
-          <Box display={"flex"} color={""} alignItems={"center"}>
-            <Typography fontWeight={400} fontSize={20}>
-              Hi Nadeem
-            </Typography>
-            <Avatar alt="Admin" src="{}" />
+        {/* Logo Center */}
+        <Typography
+          variant="h6"
+          fontWeight={800}
+          sx={{
+            letterSpacing: 1,
+            color: "text.primary",
+          }}
+        >
+          Admin
+          <Box component="span" sx={{ color: "primary.contrastText" }}>
+            Sphere
           </Box>
-          <DarkModeIcon />
+        </Typography>
+
+        {/* Right Section */}
+        <Box display="flex" alignItems="center" gap={2}>
+          <IconButton>
+            <Badge badgeContent={4} color="error">
+              <NotificationsNoneIcon />
+            </Badge>
+          </IconButton>
+
+          <IconButton onClick={() => dispatch(toggleTheme())}>
+            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography fontWeight={500}>Nadeem</Typography>
+
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                cursor: "pointer",
+              }}
+              onClick={handleOpen}
+            >
+              N
+            </Avatar>
+          </Box>
+
+          {/* Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem>
+              <SettingsIcon sx={{ mr: 1 }} />
+              Settings
+            </MenuItem>
+            <Divider />
+            <MenuItem>
+              <LogoutIcon sx={{ mr: 1 }} />
+              Logout
+            </MenuItem>
+          </Menu>
         </Box>
-      </Box>
-    </>
+      </Toolbar>
+    </AppBar>
   );
 }
